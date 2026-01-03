@@ -1,5 +1,6 @@
 package com.koiti.benchmark;
 
+import com.koiti.nop.feature.FeatureFlag;
 import com.koiti.nop.feature.FeatureFlagRegistry;
 import com.koiti.nop.payment.NOPPaymentProcessor;
 import com.koiti.traditional.TraditionalFeatureFlagService;
@@ -26,12 +27,13 @@ public class FeatureFlagBenchmark {
     // Estado do Benchmark
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        // Abordagem Tradicional
         TraditionalFeatureFlagService traditionalService;
         TraditionalPaymentProcessor traditionalProcessor;
 
         // Abordagem NOP
         NOPPaymentProcessor nopProcessor;
+
+        FeatureFlag nopFlag;
 
         @Setup(Level.Trial)
         public void setup() {
@@ -43,7 +45,7 @@ public class FeatureFlagBenchmark {
             // Setup NOP
             FeatureFlagRegistry registry = FeatureFlagRegistry.getInstance();
             registry.clear();
-            registry.createOrUpdate("new_payment_nop", true);
+            nopFlag = registry.getFlag("new_payment_nop");
             nopProcessor = new NOPPaymentProcessor("new_payment_nop");
         }
     }
@@ -89,10 +91,9 @@ public class FeatureFlagBenchmark {
     @Benchmark
     @OperationsPerInvocation(1000)
     public void nopWithChanges(BenchmarkState state) {
-        FeatureFlagRegistry registry = FeatureFlagRegistry.getInstance();
         for (int i = 0; i < 1000; i++) {
             if (i % 100 == 0) {
-                registry.setFlagState("new_payment_nop", i % 200 == 0);
+                state.nopFlag.setEnabled(i % 200 == 0);
             }
             state.nopProcessor.process(100.0);
         }
