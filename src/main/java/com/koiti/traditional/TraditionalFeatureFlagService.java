@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementação TRADICIONAL de Feature Flags
- * 
  * PROBLEMA: Verifica a condição a CADA chamada
  * - Redundância temporal
  * - Overhead de CPU

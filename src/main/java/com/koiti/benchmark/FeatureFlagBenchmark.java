@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Benchmark comparando abordagem Tradicional vs NOP
- * 
  * Hipótese (baseada no artigo):
  * - NOP deve ser ~9.72x mais rápido
  * - Menos overhead de CPU

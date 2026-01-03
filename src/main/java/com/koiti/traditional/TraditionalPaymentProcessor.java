@@ -2,7 +2,6 @@ package com.koiti.traditional;
 
 /**
  * Processador de Pagamento TRADICIONAL
- * 
  * Verifica o feature flag a CADA execução
  */
 public class TraditionalPaymentProcessor {

@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Registry centralizado de Feature Flags
- * 
  * Gerencia todas as flags e facilita a inscrição de observers
  */
 public class FeatureFlagRegistry {

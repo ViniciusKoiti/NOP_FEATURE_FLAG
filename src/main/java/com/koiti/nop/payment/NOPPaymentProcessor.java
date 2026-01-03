@@ -4,12 +4,10 @@ import com.koiti.nop.feature.FeatureFlagRegistry;
 
 /**
  * Processador de Pagamento usando Paradigma Orientado a Notificações (NOP)
- * 
  * DIFERENÇA CHAVE da abordagem tradicional:
  * - NÃO há "if" no método process()
  * - A estratégia é trocada quando a flag MUDA (reativo)
  * - Execução é DIRETA, sem verificações
- * 
  * Resultado: ~9.72x mais rápido (segundo o artigo)
  */
 public class NOPPaymentProcessor {

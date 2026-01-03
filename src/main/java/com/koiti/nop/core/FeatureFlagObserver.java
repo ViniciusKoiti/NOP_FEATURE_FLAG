@@ -2,7 +2,6 @@ package com.koiti.nop.core;
 
 /**
  * Observer para mudanças em Feature Flags
- * 
  * Conceito NOP: Entidades NOTIFICAM mudanças
  * ao invés de serem constantemente consultadas
  */
