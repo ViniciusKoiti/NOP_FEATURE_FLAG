@@ -18,8 +18,6 @@ public class TraditionalFeatureFlagService {
     }
 
     public boolean isEnabled(String name) {
-        // ❌ Esta verificação acontece MILHÕES de vezes
-        // Mesmo quando o valor não mudou!
         return flags.getOrDefault(name, false);
     }
 }
