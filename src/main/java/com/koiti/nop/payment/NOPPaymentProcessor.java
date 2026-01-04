@@ -19,26 +19,16 @@ public class NOPPaymentProcessor {
         this.newPaymentStrategy = new NewPaymentStrategy();
         this.legacyPaymentStrategy = new LegacyPaymentStrategy();
         
-        // ✅ Inscreve-se para receber notificações de mudanças
-        FeatureFlagRegistry.getInstance().observe(featureFlagName, 
+        FeatureFlagRegistry.getInstance().observe(featureFlagName,
             (name, enabled) -> {
-                // Quando a flag MUDA, troca a estratégia
                 currentStrategy = enabled ? newPaymentStrategy : legacyPaymentStrategy;
             }
         );
     }
-
-    /**
-     * ✅ SEM IF! Execução direta!
-     * 
-     * O "if" foi resolvido quando a flag mudou,
-     * não a cada chamada deste método.
-     */
     public void process(double amount) {
         currentStrategy.process(amount);
     }
 
-    // Implementações concretas
     private static class NewPaymentStrategy implements PaymentStrategy {
         @Override
         public void process(double amount) {

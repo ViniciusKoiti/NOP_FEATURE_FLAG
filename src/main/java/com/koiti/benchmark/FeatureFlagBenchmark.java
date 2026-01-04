@@ -6,6 +6,7 @@ import com.koiti.nop.payment.NOPPaymentProcessor;
 import com.koiti.traditional.TraditionalFeatureFlagService;
 import com.koiti.traditional.TraditionalPaymentProcessor;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
@@ -24,29 +25,36 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class FeatureFlagBenchmark {
 
-    // Estado do Benchmark
+    private static final String TRADITIONAL_FLAG_NAME = "payment-v2";
+    private static final String NOP_FLAG_NAME = "payment-v2-nop";
+
     @State(Scope.Benchmark)
     public static class BenchmarkState {
         TraditionalFeatureFlagService traditionalService;
         TraditionalPaymentProcessor traditionalProcessor;
 
-        // Abordagem NOP
         NOPPaymentProcessor nopProcessor;
-
+        FeatureFlagRegistry nopRegistry;
         FeatureFlag nopFlag;
 
         @Setup(Level.Trial)
         public void setup() {
             // Setup Tradicional
             traditionalService = new TraditionalFeatureFlagService();
-            traditionalService.setFlag("new_payment", true);
+            traditionalService.setFlag(TRADITIONAL_FLAG_NAME, true);
             traditionalProcessor = new TraditionalPaymentProcessor(traditionalService);
 
             // Setup NOP
-            FeatureFlagRegistry registry = FeatureFlagRegistry.getInstance();
-            registry.clear();
-            nopFlag = registry.getFlag("new_payment_nop");
-            nopProcessor = new NOPPaymentProcessor("new_payment_nop");
+            nopRegistry = FeatureFlagRegistry.getInstance();
+            nopRegistry.clear();
+
+            nopRegistry.createOrUpdate(NOP_FLAG_NAME, true);
+            nopFlag = nopRegistry.getFlag(NOP_FLAG_NAME);
+            nopProcessor = new NOPPaymentProcessor(NOP_FLAG_NAME);
+
+            if (nopFlag == null) {
+                throw new IllegalStateException("NOP flag não foi criada corretamente!");
+            }
         }
     }
 
@@ -56,8 +64,10 @@ public class FeatureFlagBenchmark {
      * - Overhead de if + branch prediction
      */
     @Benchmark
-    public void traditionalApproach(BenchmarkState state) {
+    @Threads(1)
+    public void traditional_1thread(BenchmarkState state, Blackhole bh) {
         state.traditionalProcessor.process(100.0);
+        bh.consume(state.traditionalProcessor);
     }
 
     /**
@@ -66,8 +76,10 @@ public class FeatureFlagBenchmark {
      * - Execução direta
      */
     @Benchmark
-    public void nopApproach(BenchmarkState state) {
+    @Threads(1)
+    public void nop_1thread(BenchmarkState state, Blackhole bh) {
         state.nopProcessor.process(100.0);
+        bh.consume(state.nopProcessor);
     }
 
     /**
@@ -75,27 +87,53 @@ public class FeatureFlagBenchmark {
      * Simula cenário onde o flag muda periodicamente
      */
     @Benchmark
+    @Threads(1)
     @OperationsPerInvocation(1000)
-    public void traditionalWithChanges(BenchmarkState state) {
+    public void traditional_1thread_withChanges(BenchmarkState state, Blackhole bh) {
+        int operations = 0;
         for (int i = 0; i < 1000; i++) {
             if (i % 100 == 0) {
-                state.traditionalService.setFlag("new_payment", i % 200 == 0);
+                // ✅ Usa a constante
+                state.traditionalService.setFlag(TRADITIONAL_FLAG_NAME, i % 200 == 0);
             }
             state.traditionalProcessor.process(100.0);
+            operations++;
         }
+        bh.consume(operations);
     }
 
     /**
      * Benchmark com mudança frequente de flag (NOP)
      */
     @Benchmark
+    @Threads(1)
     @OperationsPerInvocation(1000)
-    public void nopWithChanges(BenchmarkState state) {
+    public void nop_1thread_withChanges(BenchmarkState state, Blackhole bh) {
+        int operations = 0;
         for (int i = 0; i < 1000; i++) {
             if (i % 100 == 0) {
+                // ✅ Agora nopFlag não é mais null!
                 state.nopFlag.setEnabled(i % 200 == 0);
             }
             state.nopProcessor.process(100.0);
+            operations++;
         }
+        bh.consume(operations);
     }
+
+    @Benchmark
+    @Threads(Threads.MAX)
+    @OperationsPerInvocation(1000)
+    public void traditional_maxthreads_withChanges(BenchmarkState state, Blackhole bh) {
+        int operations = 0;
+        for (int i = 0; i < 1000; i++) {
+            if (i % 100 == 0) {
+                state.traditionalService.setFlag("payment-v2", i % 200 == 0);
+            }
+            state.traditionalProcessor.process(100.0);
+            operations++;
+        }
+        bh.consume(operations);
+    }
+
 }
