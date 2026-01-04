@@ -5,5 +5,5 @@ package com.koiti.nop.payment;
  */
 @FunctionalInterface
 public interface PaymentStrategy {
-    void process(double amount);
+    double process(double amount);
 }

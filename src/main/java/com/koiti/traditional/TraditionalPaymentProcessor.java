@@ -15,27 +15,27 @@ public class TraditionalPaymentProcessor {
         this.legacyProcessor = new LegacyPaymentProcessor();
     }
 
-    public void process(double amount) {
-        // ❌ IF executado TODA VEZ - mesmo quando o flag não mudou!
+    public double process(double amount) {
         if (featureFlagService.isEnabled("new_payment")) {
-            newProcessor.process(amount);
+            return newProcessor.process(amount);
         } else {
-            legacyProcessor.process(amount);
+            return legacyProcessor.process(amount);
         }
     }
 
-    // Simulação dos processadores
     private static class NewPaymentProcessor {
-        public void process(double amount) {
+        public double process(double amount) {
             // Simula processamento novo
             double result = amount * 1.01;
+            return result;
         }
     }
 
     private static class LegacyPaymentProcessor {
-        public void process(double amount) {
+        public double process(double amount) {
             // Simula processamento legado
             double result = amount * 1.00;
+            return result;
         }
     }
 }

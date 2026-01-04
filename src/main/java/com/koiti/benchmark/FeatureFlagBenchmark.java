@@ -66,8 +66,8 @@ public class FeatureFlagBenchmark {
     @Benchmark
     @Threads(1)
     public void traditional_1thread(BenchmarkState state, Blackhole bh) {
-        state.traditionalProcessor.process(100.0);
-        bh.consume(state.traditionalProcessor);
+        double r = state.traditionalProcessor.process(100.0);
+        bh.consume(r);
     }
 
     /**
@@ -78,8 +78,78 @@ public class FeatureFlagBenchmark {
     @Benchmark
     @Threads(1)
     public void nop_1thread(BenchmarkState state, Blackhole bh) {
-        state.nopProcessor.process(100.0);
-        bh.consume(state.nopProcessor);
+        double r = state.nopProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(2)
+    public void traditional_2threads(BenchmarkState state, Blackhole bh) {
+        double r = state.traditionalProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(2)
+    public void nop_2threads(BenchmarkState state, Blackhole bh) {
+        double r = state.nopProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void traditional_4threads(BenchmarkState state, Blackhole bh) {
+        double r = state.traditionalProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void nop_4threads(BenchmarkState state, Blackhole bh) {
+        double r = state.nopProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(8)
+    public void traditional_8threads(BenchmarkState state, Blackhole bh) {
+        double r = state.traditionalProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(8)
+    public void nop_8threads(BenchmarkState state, Blackhole bh) {
+        double r = state.nopProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(16)
+    public void traditional_16threads(BenchmarkState state, Blackhole bh) {
+        double r = state.traditionalProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(16)
+    public void nop_16threads(BenchmarkState state, Blackhole bh) {
+        double r = state.nopProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(Threads.MAX)
+    public void traditional_maxthreads(BenchmarkState state, Blackhole bh) {
+        double r = state.traditionalProcessor.process(100.0);
+        bh.consume(r);
+    }
+
+    @Benchmark
+    @Threads(Threads.MAX)
+    public void nop_maxthreads(BenchmarkState state, Blackhole bh) {
+        double r = state.nopProcessor.process(100.0);
+        bh.consume(r);
     }
 
     /**
@@ -90,16 +160,15 @@ public class FeatureFlagBenchmark {
     @Threads(1)
     @OperationsPerInvocation(1000)
     public void traditional_1thread_withChanges(BenchmarkState state, Blackhole bh) {
-        int operations = 0;
+        double acc = 0;
         for (int i = 0; i < 1000; i++) {
             if (i % 100 == 0) {
                 // ✅ Usa a constante
                 state.traditionalService.setFlag(TRADITIONAL_FLAG_NAME, i % 200 == 0);
             }
-            state.traditionalProcessor.process(100.0);
-            operations++;
+            acc += state.traditionalProcessor.process(100.0);
         }
-        bh.consume(operations);
+        bh.consume(acc);
     }
 
     /**
@@ -109,31 +178,43 @@ public class FeatureFlagBenchmark {
     @Threads(1)
     @OperationsPerInvocation(1000)
     public void nop_1thread_withChanges(BenchmarkState state, Blackhole bh) {
-        int operations = 0;
+        double acc = 0;
         for (int i = 0; i < 1000; i++) {
             if (i % 100 == 0) {
                 // ✅ Agora nopFlag não é mais null!
                 state.nopFlag.setEnabled(i % 200 == 0);
             }
-            state.nopProcessor.process(100.0);
-            operations++;
+            acc += state.nopProcessor.process(100.0);
         }
-        bh.consume(operations);
+        bh.consume(acc);
     }
 
     @Benchmark
     @Threads(Threads.MAX)
     @OperationsPerInvocation(1000)
     public void traditional_maxthreads_withChanges(BenchmarkState state, Blackhole bh) {
-        int operations = 0;
+        double acc = 0;
         for (int i = 0; i < 1000; i++) {
             if (i % 100 == 0) {
                 state.traditionalService.setFlag("payment-v2", i % 200 == 0);
             }
-            state.traditionalProcessor.process(100.0);
-            operations++;
+            acc += state.traditionalProcessor.process(100.0);
         }
-        bh.consume(operations);
+        bh.consume(acc);
+    }
+
+    @Benchmark
+    @Threads(Threads.MAX)
+    @OperationsPerInvocation(1000)
+    public void nop_maxthreads_withChanges(BenchmarkState state, Blackhole bh) {
+        double acc = 0;
+        for (int i = 0; i < 1000; i++) {
+            if (i % 100 == 0) {
+                state.nopFlag.setEnabled(i % 200 == 0);
+            }
+            acc += state.nopProcessor.process(100.0);
+        }
+        bh.consume(acc);
     }
 
 }

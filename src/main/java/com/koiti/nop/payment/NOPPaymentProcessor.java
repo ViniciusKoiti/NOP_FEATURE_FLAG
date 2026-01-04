@@ -25,23 +25,23 @@ public class NOPPaymentProcessor {
             }
         );
     }
-    public void process(double amount) {
-        currentStrategy.process(amount);
+    public double process(double amount) {
+        return currentStrategy.process(amount);
     }
 
     private static class NewPaymentStrategy implements PaymentStrategy {
         @Override
-        public void process(double amount) {
-            // Simula novo processamento
+        public double process(double amount) {
             double result = amount * 1.01;
+            return result;
         }
     }
 
     private static class LegacyPaymentStrategy implements PaymentStrategy {
         @Override
-        public void process(double amount) {
-            // Simula processamento legado
+        public double process(double amount) {
             double result = amount * 1.00;
+            return result;
         }
     }
 }
